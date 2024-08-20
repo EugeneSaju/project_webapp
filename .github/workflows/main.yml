@@ -1,0 +1,43 @@
+name: "website deployment"
+on: 
+  push:
+    branches:
+      - dev
+
+jobs:
+  
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Repository checkout"
+        uses: actions/checkout@v3
+
+      - name: Set up SSH agent
+        uses: appleboy/ssh-action@master
+        with:
+          host: localhost
+          key: ${{ secrets.PRIVATE_KEY }}
+      - name: Add SSH key to agent
+        run: ssh-add -K ~/.ssh/id_rsa
+
+      - name: "Installing python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install ansible
+
+      - name: Run Python script
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          PRIVATE_KEY: ${{ secrets.INSTANCE_PRIVATE_KEY }}
+        run: |
+          python ./Deployment/playbooks/python_pgm.py

@@ -1,0 +1,138 @@
+- name: "Fetching details of all webservers (Playbook-1)"
+  become: true
+  hosts: localhost
+  vars_files:
+    - ../vars/ec2_variables.yml
+  
+  tasks:
+
+    - name: "Gather information about any instance"
+      amazon.aws.ec2_instance_info:
+        access_key: "{{ aws_access_key }}"
+        secret_key: "{{ aws_secret_key }}"
+        region: "{{ aws_region }}"
+        uptime: 1
+        filters:
+          "tag:Name": "webserver-*"
+          instance-state-name: ["running"]
+      register: ec2_node_info
+
+    - name: "Dynamic Inventory"
+      add_host:
+        groups: "amazon-linux-webservers"
+        name: "{{ item.private_ip_address }}"
+        ansible_ssh_user: "ec2-user"
+        ansible_ssh_host: "{{ item.private_ip_address }}"
+        ansible_ssh_port: "{{ ssh_port }}"
+        ansible_ssh_private_key_file: "{{ private_key }}"
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+      with_items: "{{ ec2_node_info.instances }}"
+
+
+- name: "Deploying Website"
+  become: true
+  hosts: amazon-linux-webservers
+  vars_files:
+    - ../vars/variables.yml
+
+  tasks:
+
+    - name: "Installing Apache server on Debian"
+      when: ansible_distribution == "Ubuntu"
+      apt:
+        name: "{{ debian_packages }}"
+        state: present
+        update_cache: true  
+
+    - name: "Installing Appache on Redhat"
+      when: ansible_distribution == "Amazon"
+      yum:
+        name: "{{ redhat_packages }}"
+        state: present
+        update_cache: true
+    
+    - name: "Creating template for virtualhost"
+      template:
+        src: "{{ virtualhost_src }}"
+        dest: "{{ virtualhost_dest }}"
+      register: vhost_conf_state
+    
+    - name: "Enabling the virtualhost configuration"
+      when: vhost_conf_state.changed and ansible_distribution == "Ubuntu"
+      command: "a2ensite blog.conf"
+
+    - name: "Creating directory"
+      file:
+        path: "{{ clone_dir }}"
+        state: directory
+        owner: "{{ clone_dir_owner }}"
+        group: "{{ clone_dir_group }}"
+        mode: "{{ clone_dir_mode }}"
+
+    - name: "Cloning git repo"
+      register: git_state
+      git:
+        repo: "{{ url_of_repo }}"
+        dest: "{{ clone_dir }}"
+        clone: yes
+        update: yes
+          
+    - name: "Copying website data to webserver docroot"
+      when: 
+        - ansible_distribution == "Amazon"
+        - git_state.changed
+      copy:
+        src: "{{ clone_dir }}"
+        dest: "{{ httpd_docroot }}"
+        owner: "{{ apache_redhat_owner }}"
+        group: "{{ apache_redhat_group }}"
+        remote_src: true
+
+    - name: "Copying website data to webserver docroot"
+      when: 
+        - ansible_distribution == "Ubuntu"
+        - git_state.changed
+      copy:
+        src: "{{ clone_dir }}"
+        dest: "{{ httpd_docroot }}"
+        owner: "{{ apache_debian_owner }}"
+        group: "{{ apache_debian_group }}"
+        remote_src: true
+    
+    - name: "Reload Apache to apply changes"
+      service:
+        name: httpd
+        state: reloaded
+      when: vhost_conf_state.changed
+
+    - name: "Restarting apache on Redhat"
+      when: 
+        - ansible_distribution == "Amazon"
+        - vhost_conf_state.changed or git_state.changed
+      service: 
+        name: "httpd"
+        state: restarted
+        enabled: true
+
+    - name: "Restarting apache on Ubuntu"
+      when: ansible_distribution == "Ubuntu"
+      service: 
+        name: "apache2"
+        state: restarted
+        enabled: true     
+    
+    - name: Send notification message via Slack
+      slack:
+        token: "{{ slack_token }}"
+        msg: 'Successfull'
+      delegate_to: localhost
+      
+    
+
+    
+  
+  
+
+  
+  
+      

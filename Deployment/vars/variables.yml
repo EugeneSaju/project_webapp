@@ -1,0 +1,21 @@
+ansible_become_password: "admin"
+httpd_docroot: "/var/www/html/gym/"
+httpd_servername: "gym.dhjkprt.shop"
+httpd_port: "80"
+apache_redhat_owner: "apache"
+apache_redhat_group: "apache"
+apache_debian_owner: "www-data"
+apache_debian_group: "www-data"
+url_of_repo: "https://github.com/EugeneSaju/webapp_gym.git"
+clone_dir: "/var/gym_app/"
+clone_dir_owner: "root"
+clone_dir_group: "root"
+clone_dir_mode: "0770"
+debian_packages:
+  - apache2
+  - git
+redhat_packages:
+  - httpd
+  - git
+virtualhost_src: "../virtualhost/virtualhost.conf.j2"
+virtualhost_dest: "/etc/httpd/conf.d/blog.conf"

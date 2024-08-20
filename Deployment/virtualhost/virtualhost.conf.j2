@@ -1,0 +1,9 @@
+<VirtualHost *:{{ httpd_port }}>
+    ServerName {{ httpd_servername }}
+    DocumentRoot {{ httpd_docroot }}
+    DirectoryIndex index.html
+
+    <Directory {{ httpd_docroot }}>
+        AllowOverride all
+    </Directory>
+</VirtualHost>

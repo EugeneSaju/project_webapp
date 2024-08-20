@@ -1,0 +1,11 @@
+- name: "main"
+  become: true
+  hosts: localhost
+  
+
+  tasks:
+    - name: Send notification message when fail Slack
+      slack:
+        token: "{{ slack_token }}"
+        msg: 'failed'
+      delegate_to: localhost
