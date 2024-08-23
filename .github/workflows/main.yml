@@ -1,8 +1,10 @@
 name: "website deployment"
 
-on: 
+on:
   workflow_dispatch:
-    
+  push:
+    branches:
+      - dev
 
 jobs:
   
