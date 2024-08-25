@@ -1,11 +1,9 @@
-name: "website deployment"
+name: MyTriggeredAction
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - dev
-
+  repository_dispatch:
+    types: [trigger-workflow]
+    
 jobs:
   
   build:
