@@ -1,8 +1,9 @@
 name: MyTriggeredAction
 
 on:
-  repository_dispatch:
-    types: [trigger-workflow]
+  push:
+    branches:
+      - dev
     
 jobs:
   
