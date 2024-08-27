@@ -37,19 +37,3 @@ jobs:
             python3 python_pgm.py
             cd ~
             rm -rf project_webapp/
-
-  
-      - name: Repository checkout
-        uses: actions/checkout@v3
-
-      - name: Set environment variables
-        env:
-          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          REGION: ${{ secrets.REGION }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          # Consider not storing entire private key as a secret
-          PRIVATE_KEY: ${{ secrets.INSTANCE_PRIVATE_KEY }}
-        run: |
-          true
