@@ -32,10 +32,10 @@ jobs:
             sudo yum install python3 -y
             sudo yum install python3-pip -y
             sudo yum install ansible -y
-            pip install botocore boto3
+            sudo pip install botocore boto3
             git clone https://github.com/EugeneSaju/project_webapp.git
             cd project_webapp/Deployment/playbooks/
-            chmod +x program.py
+            chmod +x python_pgm.py
             python3 python_pgm.py
             cd ~
             rm -rf project_webapp/
