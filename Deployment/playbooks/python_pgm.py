@@ -1,6 +1,17 @@
 import subprocess
 import os
 
+def install_botocore_boto3():
+  """Installs botocore and boto3 libraries using pip."""
+  try:
+    subprocess.run(['pip', 'install', 'botocore', 'boto3'], check=True)
+    print("Successfully installed botocore and boto3 libraries.")
+  except subprocess.CalledProcessError as e:
+    print(f"Error installing libraries: {e}")
+
+# Install botocore and boto3 before running the playbook
+install_botocore_boto3()
+
 slack_token = os.getenv('SLACK_TOKEN')
 aws_access_key = os.getenv('ACCESS_KEY')
 aws_secret_key = os.getenv('SECRET_KEY')
